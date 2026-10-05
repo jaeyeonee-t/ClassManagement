@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>꿈꾸는 6학년 학급 경제 & 성장 교실</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+
+    <!-- Top Navigation & Mode Bar -->
+    <header class="main-header">
+      <div class="logo-area">
+        <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div class="logo-text">
+          <h1>꿈꾸는 6학년 학급경제</h1>
+          <span class="sub-title">Growth & Economy Class</span>
+        </div>
+      </div>
+
+      <!-- Mode Switcher -->
+      <div class="mode-switcher-container">
+        <div class="mode-toggle">
+          <button id="btn-mode-teacher" class="mode-btn active" onclick="switchMode('teacher')">
+            <i class="fa-solid fa-user-tie"></i> 교사 모드
+          </button>
+          <button id="btn-mode-student" class="mode-btn" onclick="openStudentPickerModal()">
+            <i class="fa-solid fa-user-graduate"></i> 학생 모드
+          </button>
+        </div>
+        
+        <!-- Active Profile Info Badge -->
+        <div id="active-profile-badge" class="active-profile-badge teacher-badge">
+          <i class="fa-solid fa-shield-halved"></i> <span id="current-user-name">담임교사 모드</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="content-body">
+      
+      <!-- ================= TEACHER VIEW ================= -->
+      <section id="view-teacher" class="view-section active">
+        <!-- Top Stats Overview -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon icon-blue"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">전체 학생</span>
+              <span class="stat-value" id="stat-total-students">25명</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-gold"><i class="fa-solid fa-coins"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">오늘 지급된 총 화폐</span>
+              <span class="stat-value" id="stat-today-currency">+0 Gold</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-purple"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">상점 승인 대기</span>
+              <span class="stat-value" id="stat-pending-orders">0건</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-green"><i class="fa-solid fa-list-check"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">오늘의 미션 참여</span>
+              <span class="stat-value" id="stat-mission-rate">0%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Teacher Navigation Tabs -->
+        <div class="tab-menu">
+          <button class="tab-btn active" onclick="switchTeacherTab('students')">
+            <i class="fa-solid fa-users-gear"></i> 학생 목록 & 화폐 관리
+          </button>
+          <button class="tab-btn" onclick="switchTeacherTab('roles')">
+            <i class="fa-solid fa-briefcase"></i> 1인 1역 & 미션 관리
+          </button>
+          <button class="tab-btn" onclick="switchTeacherTab('shop')">
+            <i class="fa-solid fa-store"></i> 상점 & 승인 관리 <span id="shop-badge-count" class="badge-count hidden">0</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: Student Roster & Currency Management -->
+        <div id="teacher-tab-students" class="teacher-tab-content active">
+          <div class="section-toolbar">
+            <div class="toolbar-left">
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="student-search-input" placeholder="학생 이름 검색..." oninput="renderStudentList()">
+              </div>
+              <button class="btn btn-secondary" onclick="toggleSelectAllStudents()">
+                <i class="fa-solid fa-square-check"></i> <span id="btn-select-all-text">전체 선택</span>
+              </button>
+              <span class="selected-count-label"><strong id="selected-student-count">0</strong>명 선택됨</span>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-primary btn-glow" onclick="openBulkCurrencyModal()">
+                <i class="fa-solid fa-coins"></i> 화폐 지급 / 차감
+              </button>
+              <button class="btn btn-outline" onclick="resetToSampleData()">
+                <i class="fa-solid fa-rotate-left"></i> 데이터 초기화
+              </button>
+            </div>
+          </div>
+
+          <!-- Student Cards Grid -->
+          <div id="student-cards-grid" class="cards-grid">
+            <!-- Student cards injected by JS -->
+          </div>
+        </div>
+
+        <!-- TAB 2: Roles & Daily Missions -->
+        <div id="teacher-tab-roles" class="teacher-tab-content">
+          <div class="grid-2col">
+            <!-- 1인 1역 배정 관리 -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-user-tag icon-accent"></i> 1인 1역 배정 현황</h3>
+                <button class="btn btn-sm btn-outline" onclick="autoAssignRoles()">
+                  <i class="fa-solid fa-shuffle"></i> 무작위 배정
+                </button>
+              </div>
+              <div class="role-list-table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>학생 이름</th>
+                      <th>현재 배정된 역할</th>
+                      <th>일일 수행 상태</th>
+                      <th>역할 변경</th>
+                    </tr>
+                  </thead>
+                  <tbody id="role-assignment-tbody">
+                    <!-- JS Injected -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 학급 오늘의 미션 관리 -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-bullseye icon-accent"></i> 오늘의 학급 미션 관리</h3>
+                <button class="btn btn-sm btn-primary" onclick="openAddMissionModal()">
+                  <i class="fa-solid fa-plus"></i> 미션 추가
+                </button>
+              </div>
+              <div id="teacher-mission-list" class="mission-list">
+                <!-- JS Injected -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: Shop & Purchase Approval -->
+        <div id="teacher-tab-shop" class="teacher-tab-content">
+          <div class="grid-2col">
+            <!-- 승인 대기 주문 -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-clipboard-check icon-accent"></i> 쿠폰 / 물품 구매 승인 대기</h3>
+              </div>
+              <div id="approval-orders-list" class="approval-list">
+                <!-- JS Injected -->
+              </div>
+            </div>
+
+            <!-- 상점 상품 관리 -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-boxes-stacked icon-accent"></i> 학급 상점 상품 등록 목록</h3>
+                <button class="btn btn-sm btn-primary" onclick="openAddShopItemModal()">
+                  <i class="fa-solid fa-plus"></i> 새 상품 추가
+                </button>
+              </div>
+              <div id="teacher-shop-item-list" class="shop-manage-grid">
+                <!-- JS Injected -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= STUDENT VIEW ================= -->
+      <section id="view-student" class="view-section">
+        <!-- Student Top Profile Card -->
+        <div class="student-profile-hero">
+          <div class="profile-avatar">
+            <span id="student-hero-avatar">👦</span>
+          </div>
+          <div class="profile-details">
+            <div class="profile-header-row">
+              <h2 id="student-hero-name">홍길동</h2>
+              <span class="role-badge" id="student-hero-role"><i class="fa-solid fa-user-gear"></i> 칠판 도우미</span>
+            </div>
+            <div class="profile-stats-row">
+              <div class="hero-stat-box">
+                <span class="label">보유 화폐</span>
+                <span class="val gold" id="student-hero-balance">0 <small>Gold</small></span>
+              </div>
+              <div class="hero-stat-box">
+                <span class="label">현재 레벨</span>
+                <span class="val level" id="student-hero-level">Lv.1</span>
+              </div>
+              <div class="hero-stat-box xp-box">
+                <div class="xp-label-row">
+                  <span>경험치 (XP)</span>
+                  <span id="student-hero-xp-text">0 / 100 XP</span>
+                </div>
+                <div class="xp-progress-bar">
+                  <div id="student-hero-xp-fill" class="xp-fill" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student Navigation Tabs -->
+        <div class="tab-menu student-tab-menu">
+          <button class="tab-btn active" onclick="switchStudentTab('tasks')">
+            <i class="fa-solid fa-calendar-check"></i> 오늘 할 일 & 미션
+          </button>
+          <button class="tab-btn" onclick="switchStudentTab('shop')">
+            <i class="fa-solid fa-store"></i> 학급 상점 이용
+          </button>
+          <button class="tab-btn" onclick="switchStudentTab('inventory')">
+            <i class="fa-solid fa-ticket"></i> 내 쿠폰함 & 활동 내역
+          </button>
+        </div>
+
+        <!-- STUDENT TAB 1: Today's Tasks -->
+        <div id="student-tab-tasks" class="student-tab-content active">
+          <div class="grid-2col">
+            <!-- 1인 1역 일일 점검 -->
+            <div class="glass-panel task-card">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-id-card icon-accent"></i> 나의 1인 1역 수행하기</h3>
+                <span class="date-tag" id="current-date-tag">Today</span>
+              </div>
+              <div class="task-box" id="student-role-task-box">
+                <!-- JS Injected -->
+              </div>
+            </div>
+
+            <!-- 오늘의 학급 미션 -->
+            <div class="glass-panel task-card">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-star icon-accent"></i> 오늘의 학급 미션</h3>
+              </div>
+              <div id="student-mission-list" class="student-mission-list">
+                <!-- JS Injected -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STUDENT TAB 2: Class Shop -->
+        <div id="student-tab-shop" class="student-tab-content">
+          <div class="shop-notice">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>상점에서 원하는 쿠폰을 신청하면 잔액이 차감되며, 선생님의 확인 후 쿠폰이 승인됩니다.</span>
+          </div>
+          <div id="student-shop-grid" class="shop-grid">
+            <!-- JS Injected -->
+          </div>
+        </div>
+
+        <!-- STUDENT TAB 3: Inventory & History -->
+        <div id="student-tab-inventory" class="student-student-tab-content">
+          <div class="grid-2col">
+            <!-- 내 보유 쿠폰 -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-box-archive icon-accent"></i> 내가 구매한 쿠폰함</h3>
+              </div>
+              <div id="student-inventory-list" class="inventory-list">
+                <!-- JS Injected -->
+              </div>
+            </div>
+
+            <!-- 화폐/XP 기록 -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-receipt icon-accent"></i> 최근 화폐 및 XP 변동 내역</h3>
+              </div>
+              <div id="student-history-list" class="history-list">
+                <!-- JS Injected -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. Student Picker Modal (학생 선택 모달) -->
+  <div id="modal-student-picker" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-graduate"></i> 학생 프로필 선택</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-student-picker')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">로그인할 학생을 선택해 주세요 (총 25명)</p>
+        <div id="student-picker-grid" class="student-picker-grid">
+          <!-- JS Injected 25 student buttons -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Bulk/Single Currency Modal (화폐 지급/차감 모달) -->
+  <div id="modal-currency" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-coins"></i> 학급 화폐 지급 / 차감</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-currency')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc" id="currency-modal-target-desc">선택한 학생 0명에게 화폐를 지급하거나 차감합니다.</p>
+        
+        <div class="form-group">
+          <label>지급 / 차감 선택</label>
+          <div class="segmented-control">
+            <button id="btn-type-plus" class="segment-btn active" onclick="setCurrencyType('plus')">
+              <i class="fa-solid fa-plus-circle"></i> 지급 (+Gold, +XP)
+            </button>
+            <button id="btn-type-minus" class="segment-btn" onclick="setCurrencyType('minus')">
+              <i class="fa-solid fa-minus-circle"></i> 차감 (-Gold)
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="currency-amount">금액 (Gold)</label>
+          <input type="number" id="currency-amount" class="form-input" placeholder="예: 50" min="1" value="50">
+          <div class="quick-amount-buttons">
+            <button class="btn-chip" onclick="setQuickAmount(10)">+10</button>
+            <button class="btn-chip" onclick="setQuickAmount(50)">+50</button>
+            <button class="btn-chip" onclick="setQuickAmount(100)">+100</button>
+            <button class="btn-chip" onclick="setQuickAmount(500)">+500</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="currency-reason">지급 / 차감 사유</label>
+          <input type="text" id="currency-reason" class="form-input" placeholder="예: 청소 도우미 훌륭히 수행, 수업 집중 보상 등">
+          <div class="quick-reason-buttons">
+            <button class="btn-chip" onclick="setQuickReason('1인 1역 역할 완수')">1인 1역 완수</button>
+            <button class="btn-chip" onclick="setQuickReason('수업 참여 및 발표 우수')">수업 발표 우수</button>
+            <button class="btn-chip" onclick="setQuickReason('오늘의 미션 완료')">미션 완료</button>
+            <button class="btn-chip" onclick="setQuickReason('학급 규칙 준수')">규칙 준수</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-currency')">취소</button>
+        <button class="btn btn-primary" onclick="submitCurrencyForm()">실행하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Add Mission Modal (미션 추가 모달) -->
+  <div id="modal-add-mission" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-bullseye"></i> 새 학급 미션 추가</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-add-mission')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="mission-title">미션 제목</label>
+          <input type="text" id="mission-title" class="form-input" placeholder="예: 학급 회의 아이디어 1개 이상 내기">
+        </div>
+        <div class="form-group">
+          <label for="mission-reward">완료 보상 (Gold & XP)</label>
+          <input type="number" id="mission-reward" class="form-input" placeholder="30" value="30">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-add-mission')">취소</button>
+        <button class="btn btn-primary" onclick="submitAddMission()">추가하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Add Shop Item Modal (상점 상품 추가 모달) -->
+  <div id="modal-add-shop-item" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-box-open"></i> 새 상점 상품 등록</h3>
+        <button class="modal-close-btn" onclick="closeModal('modal-add-shop-item')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="shop-item-name">상품/쿠폰 명칭</label>
+          <input type="text" id="shop-item-name" class="form-input" placeholder="예: 원하는 자리 1일 지정권">
+        </div>
+        <div class="form-group">
+          <label for="shop-item-emoji">아이콘 이모지</label>
+          <input type="text" id="shop-item-emoji" class="form-input" placeholder="🎫" value="🎫">
+        </div>
+        <div class="form-group">
+          <label for="shop-item-price">가격 (Gold)</label>
+          <input type="number" id="shop-item-price" class="form-input" placeholder="200" value="200">
+        </div>
+        <div class="form-group">
+          <label for="shop-item-desc">상품 설명</label>
+          <input type="text" id="shop-item-desc" class="form-input" placeholder="예: 하루 동안 원하는 자리로 배치 변경">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-add-shop-item')">취소</button>
+        <button class="btn btn-primary" onclick="submitAddShopItem()">등록하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
